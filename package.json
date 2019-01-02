@@ -1,0 +1,25 @@
+{
+  "name": "bamazon",
+  "version": "1.0.0",
+  "description": "A CLI-based online store front.",
+  "main": "bamazonCustomer.js",
+  "dependencies": {
+    "dotenv": "^6.2.0",
+    "mysql": "^2.16.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BrantKeener/bamazon.git"
+  },
+  "keywords": [],
+  "author": "Brant Keener",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/BrantKeener/bamazon/issues"
+  },
+  "homepage": "https://github.com/BrantKeener/bamazon#readme"
+}
