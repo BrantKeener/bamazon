@@ -11,7 +11,7 @@
 const env = require('dotenv').config();
 const mysql = require('mysql');
 const inquirer = require('inquirer');
-let customerCart = {};
+let customerCart = [];
 
 // All the pertinent information to contact our DB
 const sqlDBConnection = mysql.createConnection({
@@ -51,20 +51,17 @@ const productArrayBuild = () => {
     });
 };
 
-//  Load the list of products
+//  Build up a list that is passed into the listDisplayer()
 const productListLoad = (id, name, price, stock) => {
+    let productObj = {};
     for(let i = 0; i < id.length; i++) {
-        let inLineDivider1 = ``;
-        let inLineDivider2 = ``;
-        let space = ` `;
-        let spaceNumber = 40 - name[i].length;
-        inLineDivider2 = space.repeat(spaceNumber);
-        if(id[i] < 10) {
-            inLineDivider1 = space.repeat(5);
-        } else if(id[i] > 9 && id[i] < 100) {
-            inLineDivider1 = space.repeat(4);
+        productObj = {
+            id: id[i],
+            name: name[i],
+            price: price[i],
+            who: 'products'
         };
-        console.log(`Product ID: ${id[i]}${inLineDivider1}Product Name: ${name[i]}${inLineDivider2}Price: $${price[i]}`);
+        listDisplayer(productObj);
     };
     whichProduct(id, name, price, stock);
 };
@@ -100,7 +97,6 @@ const whichProduct = (id, name, price, stock) => {
 // User inputs how much of the item they want, and this quantity is evaluated against the stock. If > stock, user has a choice to enter a new quantity, 
 // choose a different item, or exit. If we have enough quantity, addToCart fires.
 const howMuchProduct = (chosen) => {
-    console.log(chosen);
     inquirer.prompt([
         {
             type: 'input',
@@ -131,15 +127,63 @@ const howMuchProduct = (chosen) => {
                 };
             });
         } else {
-            addToCart();
+            let chosenWithQuant = {
+                id: chosen.id,
+                name: chosen.name,
+                price: chosen.price,
+                requested: res.quantity
+            }
+            addToCart(chosenWithQuant);
         };
     });
 };
 
-const addToCart = () => {
-    
+const addToCart = (chosen) => {
+    customerCart.push(chosen);
+    console.log('\nThis item has been added to your cart\n');
+    console.log('Items currently in your cart:\n');
+    for(let i = 0; i < customerCart.length; i++) {
+        let cartObj = {
+            name: customerCart[i].name,
+            price: customerCart[i].price,
+            requested: customerCart[i].requested,
+            who: 'cart'
+        };
+        listDisplayer(cartObj);
+    };
 };
 
+// Make the console.logs that are displayed to the user
+const listDisplayer = (object) => {
+    let space = ` `;
+    let spaceProdIdDefault = 5;
+    let spaceProdNameDefault = 40;
+    let spaceCartNameDefault = 35;
+    let spaceCartPriceDefault = 20;
+    let spaceProdIdAdjust = ``;
+    let spaceProdNameAdjust = space.repeat(spaceProdNameDefault - object.name.length);
+    let spaceCartNameAdjust = space.repeat(spaceCartNameDefault - object.name.length);
+    let spaceCartPriceAdjust = space.repeat(spaceCartPriceDefault - object.price.toString().length);
+    let id = object.id;
+    let name = object.name;
+    let price = object.price;
+    let who = object.who;
+    let requested = object.requested;
+    let spaceNumberName = 40 - object.name.length;
+    let spaceNumberPrice = 40 - object.price.length;
+    inLineDivider2 = space.repeat(spaceNumberName);
+    inLineDivider3 = space.repeat(spaceNumberPrice);
+    if(id < 10) {
+        spaceProdIdAdjust = space.repeat(spaceProdIdDefault);
+    } else if(id > 9 && id < 100) {
+        spaceProdIdAdjust = space.repeat(spaceProdIdDefault - 1);
+    };
+    if(who === 'products') {
+        console.log(`Product ID: ${id}${spaceProdIdAdjust}Product Name: ${name}${spaceProdNameAdjust}Price: $${price}`);
+    } else if(who === 'cart') {
+        console.log(`Product Name: ${name}${spaceCartNameAdjust}Price: $${price}${spaceCartPriceAdjust}Quantity: ${requested}`);
+    };
+};
 
 const appExit = () => {
     sqlDBConnection.end();
