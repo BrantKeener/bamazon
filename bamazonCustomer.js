@@ -11,6 +11,7 @@
 const env = require('dotenv').config();
 const mysql = require('mysql');
 const inquirer = require('inquirer');
+let customerCart = {};
 
 // All the pertinent information to contact our DB
 const sqlDBConnection = mysql.createConnection({
@@ -33,22 +34,25 @@ const productArrayBuild = () => {
     let idArray = [];
     let nameArray = [];
     let priceArray = [];
+    let stockArray = [];
     sqlDBConnection.query('SELECT * FROM products', (err, res) => {
         if(err) throw err;
         for(let i = 0; i < Object.keys(res).length; i++) {
             let id = res[i].id;
             let name = res[i].product_name;
             let price = res[i].price;
+            let stock = res[i].stock_quantity;
             idArray.push(id);
             nameArray.push(name);
             priceArray.push(price);
+            stockArray.push(stock);
         };
-        productListLoad(idArray, nameArray, priceArray);
+        productListLoad(idArray, nameArray, priceArray, stockArray);
     });
 };
 
 //  Load the list of products
-const productListLoad = (id, name, price) => {
+const productListLoad = (id, name, price, stock) => {
     for(let i = 0; i < id.length; i++) {
         let inLineDivider1 = ``;
         let inLineDivider2 = ``;
@@ -62,27 +66,81 @@ const productListLoad = (id, name, price) => {
         };
         console.log(`Product ID: ${id[i]}${inLineDivider1}Product Name: ${name[i]}${inLineDivider2}Price: $${price[i]}`);
     };
-    whichProduct(id, name, price);
+    whichProduct(id, name, price, stock);
 };
 
-const whichProduct = (id, name, price) => {
+// Allow the customer to choose a particular item, and build that item's data into an Object known as 'chosenItem'
+const whichProduct = (id, name, price, stock) => {
     console.log(`\n`);
     inquirer.prompt([
         {
-        type: 'input',
-        message: 'Please enter the item ID of the item you are interested in: ',
-        name: 'whichProduct',
+            type: 'input',
+            message: 'Please enter the item ID of the item you are interested in: ',
+            name: 'product',
         }
     ]).then(res => {
-        if(id.includes(parseInt(res.whichProduct))) {
+        let idNum = parseInt(res.product);
+        let index = id.indexOf(idNum);
+        if(id.includes(parseInt(idNum))) {
+            let chosenItem = {
+                id: id[index],
+                name: name[index],
+                price: price[index],
+                stock: stock[index]
+            };
             console.log('We have that item!');
+            howMuchProduct(chosenItem);
         } else {
             console.log('\n***Warning***\nThat is not a valid ID number, please look at the list again, and choose a valid ID number.\n');
-            productListLoad(id, name, price);
+            productListLoad(id, name, price, stock);
         };
     })
 };
 
-// const howMuchProduct = () => {
+// User inputs how much of the item they want, and this quantity is evaluated against the stock. If > stock, user has a choice to enter a new quantity, 
+// choose a different item, or exit. If we have enough quantity, addToCart fires.
+const howMuchProduct = (chosen) => {
+    console.log(chosen);
+    inquirer.prompt([
+        {
+            type: 'input',
+            message: 'How many of this item would you like to purchase?',
+            name: 'quantity'
+        }
+    ]).then(res => {
+        if(res.quantity > chosen.stock) {
+            console.log('\nInsufficient Quantity!\n');
+            inquirer.prompt([
+                {
+                    type: 'list',
+                    message: 'What would you like to do?',
+                    choices: ['Enter a new quantity', 'Choose a different item', 'Exit'],
+                    name: 'whatToDo'
+                }
+            ]).then(res => {
+                switch(res.whatToDo) {
+                    case 'Enter a new quantity':
+                    howMuchProduct(chosen)
+                    break;
+                    case 'Choose a different item':
+                    productArrayBuild()
+                    break;
+                    case 'Exit':
+                    appExit()
+                    break;
+                };
+            });
+        } else {
+            addToCart();
+        };
+    });
+};
 
-// };
+const addToCart = () => {
+    
+};
+
+
+const appExit = () => {
+    sqlDBConnection.end();
+};
