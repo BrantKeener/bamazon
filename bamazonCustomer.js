@@ -1,10 +1,6 @@
-// TODO Display all products  with id, name, price
-// Prompt Ask for: 
-// 1. Product ID
-// 2. How many units would you like
-// See if there is enough product
-// Return "Insufficient quantity!" if customer asks for more than available
-// If there is enough, fill order: Update SQL database
+// TODO Ask user if they would like to continue shopping, or checkout
+// If there is enough, fill order: Update SQL database **Do this after checkout**
+// Update database to include cents values, and handle approriately
 // Once the update goes through, return total cost of customer's purchase
 
 // .env to store passwords, sql for database, enquirer for CLI user interaction 
@@ -138,6 +134,7 @@ const howMuchProduct = (chosen) => {
     });
 };
 
+// Adds the item to the customer's cart
 const addToCart = (chosen) => {
     customerCart.push(chosen);
     console.log('\nThis item has been added to your cart\n');
