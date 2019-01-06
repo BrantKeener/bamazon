@@ -1,7 +1,6 @@
-// TODO Ask user if they would like to continue shopping, or checkout
-// If there is enough, fill order: Update SQL database **Do this after checkout**
-// Update database to include cents values, and handle approriately
+// TODO If there is enough, fill order: Update SQL database **Do this after checkout**
 // Once the update goes through, return total cost of customer's purchase
+// Final cart display
 
 // .env to store passwords, sql for database, enquirer for CLI user interaction 
 const env = require('dotenv').config();
@@ -91,16 +90,34 @@ const whichProduct = (id, name, price, stock) => {
 };
 
 // User inputs how much of the item they want, and this quantity is evaluated against the stock. If > stock, user has a choice to enter a new quantity, 
-// choose a different item, or exit. If we have enough quantity, addToCart fires.
+// choose a different item, or exit. If we have enough quantity (including if the customer adds the same item twice), addToCart fires.
+// This also adds up the total requested if the user chooses the same item twice.
 const howMuchProduct = (chosen) => {
     inquirer.prompt([
         {
             type: 'input',
             message: 'How many of this item would you like to purchase?',
-            name: 'quantity'
+            name: 'quantity',
+            validate: (res) => {
+                let pass = res.match(/^[0-9]/g);
+                if(pass) {
+                    return true;
+                }
+                return 'Please enter a valid numerical quantity';
+            }
         }
     ]).then(res => {
-        if(res.quantity > chosen.stock) {
+        let alreadyReqQuant = 0;
+        let prevIndex = -1;
+        if(customerCart.length > 0) {
+            for(let i = 0; i < customerCart.length; i++) {
+                if(customerCart[i].id === chosen.id) {
+                    alreadyReqQuant += parseInt(customerCart[i].requested, 10);
+                    prevIndex = i;
+                };
+            };
+        };
+        if(parseInt(res.quantity, 10) + parseInt(alreadyReqQuant, 10) > chosen.stock) {
             console.log('\nInsufficient Quantity!\n');
             inquirer.prompt([
                 {
@@ -127,16 +144,20 @@ const howMuchProduct = (chosen) => {
                 id: chosen.id,
                 name: chosen.name,
                 price: chosen.price,
-                requested: res.quantity
+                requested: parseInt(res.quantity, 10) + parseInt(alreadyReqQuant, 10)
             }
-            addToCart(chosenWithQuant);
+            addToCart(chosenWithQuant, prevIndex);
         };
     });
 };
 
-// Adds the item to the customer's cart
-const addToCart = (chosen) => {
-    customerCart.push(chosen);
+// Adds the item to the customer's cart. Update the cart if the user chooses the same item twice, or build a new item if not.
+const addToCart = (chosen, prevIndex) => {
+    if(prevIndex !== -1) {
+        customerCart[prevIndex].requested = chosen.requested;
+    } else {
+        customerCart.push(chosen);
+    };
     console.log('\nThis item has been added to your cart\n');
     console.log('Items currently in your cart:\n');
     for(let i = 0; i < customerCart.length; i++) {
@@ -147,6 +168,9 @@ const addToCart = (chosen) => {
             who: 'cart'
         };
         listDisplayer(cartObj);
+        if(i === customerCart.length - 1) {
+            shopOrCheckout();
+        };
     };
 };
 
@@ -178,8 +202,35 @@ const listDisplayer = (object) => {
     if(who === 'products') {
         console.log(`Product ID: ${id}${spaceProdIdAdjust}Product Name: ${name}${spaceProdNameAdjust}Price: $${price}`);
     } else if(who === 'cart') {
-        console.log(`Product Name: ${name}${spaceCartNameAdjust}Price: $${price}${spaceCartPriceAdjust}Quantity: ${requested}`);
+        let length = Object.keys(object).length;
+        for(let i = 0; i < length/length; i ++) {
+            console.log(`Product Name: ${name}${spaceCartNameAdjust}Price: $${price}${spaceCartPriceAdjust}Quantity: ${requested}\n`);
+        };
     };
+};
+
+// Allow the user to choose to checkout
+const shopOrCheckout = () => {
+    inquirer.prompt([
+        {
+            type: 'list',
+            message: 'Would you like to checkout, or continue shopping?',
+            choices: ['Continue Shopping', 'Checkout'],
+            name: 'shopOrOut'
+        }
+    ]).then(res => {
+        if(res.shopOrOut === 'Continue Shopping') {
+            productArrayBuild();
+        } else if(res.shopOrOut === 'Checkout') {
+            finalCheckout();
+        };
+    });
+};
+
+// This will calculate the total price, and display it to the customer.
+const finalCheckout = () => {
+    console.log('You have successfully ordered the following items.\nThank you for you purchase.')
+    console.log(customerCart);
 };
 
 const appExit = () => {
