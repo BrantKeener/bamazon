@@ -69,6 +69,14 @@ const whichProduct = (id, name, price, stock) => {
             type: 'input',
             message: 'Please enter the item ID of the item you are interested in: ',
             name: 'product',
+            validate: (res) => {
+                let pass = res.match(/^[0-9]/g);
+                let fail = res.match(/['a-z']/g);
+                if(pass && !fail) {
+                    return true;
+                }
+                return 'Please enter a valid numerical quantity';
+            }
         }
     ]).then(res => {
         let idNum = parseInt(res.product);
@@ -100,7 +108,8 @@ const howMuchProduct = (chosen) => {
             name: 'quantity',
             validate: (res) => {
                 let pass = res.match(/^[0-9]/g);
-                if(pass) {
+                let fail = res.match(/['a-z']/g);
+                if(pass && !fail) {
                     return true;
                 }
                 return 'Please enter a valid numerical quantity';
