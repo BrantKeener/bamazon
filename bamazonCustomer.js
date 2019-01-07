@@ -1,6 +1,6 @@
 // TODO If there is enough, fill order: Update SQL database **Do this after checkout**
 // Once the update goes through, return total cost of customer's purchase
-// Final cart display
+// Try to see if we can use spread syntax for orderTotal(). Is there a way to pass a variable number of parameters
 
 // .env to store passwords, sql for database, enquirer for CLI user interaction 
 const env = require('dotenv').config();
@@ -238,8 +238,36 @@ const shopOrCheckout = () => {
 
 // This will calculate the total price, and display it to the customer.
 const finalCheckout = () => {
-    console.log('You have successfully ordered the following items.\nThank you for you purchase.')
-    console.log(customerCart);
+    let idArray = [];
+    let requesetdArray = [];
+    let priceArray = [];
+    let space = ` `;
+    console.log('\nYou have successfully ordered the following items: \n');
+    for(let i = 0; i < customerCart.length; i++) {
+        let id = customerCart[i].id;
+        let name = customerCart[i].name;
+        let price = customerCart[i].price;
+        let requested = customerCart[i].requested;
+        let totalPrice = (price * requested).toFixed(2);
+        let nameSpaceDefault = 30;
+        let requestedSpaceDefault = 15;
+        let nameSapceAdjust = space.repeat(nameSpaceDefault - customerCart[i].name.length);
+        let requestedSapceAdjust = space.repeat(requestedSpaceDefault - (customerCart[i].requested).toString().length);
+        idArray.push(id);
+        requesetdArray.push(requested);
+        priceArray.push(totalPrice);
+        let logString = `Item Name: ${name}${nameSapceAdjust} Number Ordered: ${requested}${requestedSapceAdjust} Sub Total: $${totalPrice}`;
+        console.log(logString);
+    };
+    let totalSpace = space.repeat(66);
+    let orderTotal = () => {
+        let x = 0;
+        for(let i = 0; i < priceArray.length; i++) {
+           x += parseFloat(priceArray[i]);
+        };
+        return x.toFixed(2);
+    };
+    console.log(`\n${totalSpace}Order Total Price: $${orderTotal()}`);
 };
 
 const appExit = () => {
