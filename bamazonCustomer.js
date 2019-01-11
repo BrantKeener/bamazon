@@ -1,6 +1,5 @@
-// TODO If there is enough, fill order: Update SQL database **Do this after checkout**
-// Once the update goes through, return total cost of customer's purchase
-// Try to see if we can use spread syntax for orderTotal(). Is there a way to pass a variable number of parameters
+// TODO 
+// Seperate out SQL stuff into a module
 
 // .env to store passwords, sql for database, enquirer for CLI user interaction 
 const env = require('dotenv').config();
@@ -46,7 +45,7 @@ const productArrayBuild = () => {
     });
 };
 
-//  Build up a list that is passed into the listDisplayer()
+//  Build up a list that is passed into the listDisplayer()ap
 const productListLoad = (id, name, price, stock) => {
     let productObj = {};
     for(let i = 0; i < id.length; i++) {
@@ -213,7 +212,7 @@ const listDisplayer = (object) => {
     } else if(who === 'cart') {
         let length = Object.keys(object).length;
         for(let i = 0; i < length/length; i ++) {
-            console.log(`Product Name: ${name}${spaceCartNameAdjust}Price: $${price}${spaceCartPriceAdjust}Quantity: ${requested}\n`);
+            console.log(`Product Name: ${name}${spaceCartNameAdjust}Price: $${price}${spaceCartPriceAdjust}Quantity: ${requested}`);
         };
     };
 };
@@ -268,8 +267,29 @@ const finalCheckout = () => {
         return x.toFixed(2);
     };
     console.log(`\n${totalSpace}Order Total Price: $${orderTotal()}`);
+    inventoryAdjust(idArray, requesetdArray);
+};
+
+const inventoryAdjust = (id, req) => {
+    let idSearch = id.join(',');
+    let newStockQnt = [];
+    sqlDBConnection.query(`SELECT stock_quantity FROM products WHERE id IN(${idSearch})`, (err, res) => {
+        if(err) throw err;
+        for(let i = 0; i < res.length; i++) {
+            let tempArray = parseInt(res[i].stock_quantity) - parseInt(req[i], 10);
+            sqlDBConnection.query(`UPDATE products SET stock_quantity = ? WHERE id = ?`, [tempArray, id[i]], (err, res) => {
+                if(err) throw err;
+            });
+        };
+        disconnect();
+    });
 };
 
 const appExit = () => {
-    sqlDBConnection.end();
+    finalCheckout();
+    console.log('Thank you for your patronage!');
 };
+
+const disconnect = () => {
+    sqlDBConnection.end();
+}
