@@ -93,7 +93,7 @@ const whichProduct = (id, name, price, stock) => {
             console.log('\n***Warning***\nThat is not a valid ID number, please look at the list again, and choose a valid ID number.\n');
             productListLoad(id, name, price, stock);
         };
-    })
+    });
 };
 
 // User inputs how much of the item they want, and this quantity is evaluated against the stock. If > stock, user has a choice to enter a new quantity, 
