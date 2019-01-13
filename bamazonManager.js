@@ -156,7 +156,7 @@ const increaseInventory = (idArray) => {
             sqlDBConnection.query(query2, [newStock, choice], (err, res) => {
                 if(err) throw err;
                 console.log(`\nThe in-stock-quantity for ${name} has been updated to ${newStock}\n`);
-                openPrompt(1, 'view all');
+                openPrompt(1, undefined);
             });
         });
     });
