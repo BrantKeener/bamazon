@@ -1,3 +1,4 @@
+// TODO make it so that Departments can only be chosen from those specified by the supervisor Line 183
 
 // Initialize our required packages
 const env = require('dotenv').config();
@@ -184,6 +185,7 @@ const newProducts = (nameArray) => {
             }
         },
         {
+            // Make this a choice that is limited by supervisor specified departments
             input: 'type',
             message: `What department would you like to add this item to?`,
             name: `newDepartment`,

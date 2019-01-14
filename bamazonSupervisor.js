@@ -1,4 +1,11 @@
-
+// TODO Build new SQL table "departments"
+// TODO Add department_id, department_name, over_head_costs to new table
+// TODO modify products table, add column "product_sales"
+// TODO modify bamazonCustomer.js to add the multiplied total of price + quantity sold and updates product_sales
+// TODO Supervisor options: View Product Sales by Department, Create a New Department
+// TODO total_profit column is updated in app, and is prodcut_sales - over_head_costs. Do not store this value in DB
+// TODO Check manager TODO
+// TODO Check customer TODO
 
 const env = require('dotenv').config();
 const mysql = require('mysql');

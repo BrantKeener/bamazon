@@ -1,5 +1,4 @@
-// TODO 
-// Seperate out SQL stuff into a module
+// TODO Seperate out SQL stuff into a module
 
 // .env to store passwords, sql for database, enquirer for CLI user interaction 
 const env = require('dotenv').config();
