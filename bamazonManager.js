@@ -1,7 +1,4 @@
 
-// TODO 
-// Add new product Allow manager to add a completely new product
-
 // Initialize our required packages
 const env = require('dotenv').config();
 const mysql = require('mysql');
