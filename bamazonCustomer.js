@@ -272,7 +272,6 @@ const finalCheckout = () => {
 
 const inventoryAdjust = (id, req) => {
     let idSearch = id.join(',');
-    let newStockQnt = [];
     sqlDBConnection.query(`SELECT stock_quantity FROM products WHERE id IN(${idSearch})`, (err, res) => {
         if(err) throw err;
         for(let i = 0; i < res.length; i++) {
