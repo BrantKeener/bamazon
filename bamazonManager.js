@@ -1,4 +1,3 @@
-// TODO make it so that Departments can only be chosen from those specified by the supervisor Line 183
 
 // Initialize our required packages
 const env = require('dotenv').config();
@@ -32,7 +31,6 @@ sqlDBConnection.connect((err) => {
             return ['View All Products for Sale', 'Increase Available Inventory', 'Add a New Item', 'Exit'];
             case 'increase':
             return ['View All Products for Sale', 'View Low Inventory', 'Increase Available Inventory', 'Add a New Item', 'Exit'];
-            // This one will need a lot of work
             case 'add':
             return ['View Products for Sale', 'View Low Inventory', 'Increase Available Inventory', 'Add a New Item', 'Exit'];
             default:
@@ -169,6 +167,17 @@ const increaseInventory = (idArray) => {
 // Collect the manager's input data to pass to a validation function
 
 const newProducts = (nameArray) => {
+    // This function will give the user choices for which department to add the item to based on approved departments by the supervisor.
+    let departmentArray = [];
+    const departmentChoices = () => {
+        sqlDBConnection.query(`SELECT department_name FROM departments`, (err, res) => {
+            if(err) throw err;
+            for(let i = 0; i < Object.keys(res).length; i++) {
+                departmentArray.push(res[i].department_name);
+            };
+        });
+        return departmentArray;
+    }
     inquirer.prompt([
         {
             input: 'type',
@@ -185,17 +194,10 @@ const newProducts = (nameArray) => {
             }
         },
         {
-            // Make this a choice that is limited by supervisor specified departments
-            input: 'type',
+            type: 'list',
             message: `What department would you like to add this item to?`,
-            name: `newDepartment`,
-            validate: (res) => {
-                let short = res.length < 1;
-                if(!short) {
-                    return true;
-                };
-                return short ? `This cannot be blank.` : `That name already exists. Please enter a name that is different than already existing products.`;
-            }
+            choices: departmentChoices(),
+            name: `newDepartment`
         },
         {
             input: 'type',
@@ -233,6 +235,7 @@ const newProducts = (nameArray) => {
         priceBuildArray.splice((priceBuildArray.length - 2), 0, '.');
         const price = priceBuildArray.join('');
         const newItemObject = {
+            departmentChoices: departmentArray,
             nameArray: nameArray,
             name: name,
             department: department,
@@ -312,7 +315,6 @@ const correction = (object) => {
             name: 'editChoice'
         }
     ]).then(res => {
-        console.log(res.editChoice);
         switch(res.editChoice) {
             case (`Product Name: ${object.name}`):
             inquirer.prompt([
@@ -338,16 +340,10 @@ const correction = (object) => {
             case (`Department: ${object.department}`):
             inquirer.prompt([
                 {
-                    input: 'type',
+                    type: 'list',
                     message: `What department would you like to add this item to?`,
-                    name: `newDepartment`,
-                    validate: (res) => {
-                        let short = res.length < 1;
-                        if(!short) {
-                            return true;
-                        };
-                        return short ? `This cannot be blank.` : `That name already exists. Please enter a name that is different than already existing products.`;
-                    }
+                    choices: object.departmentChoices,
+                    name: `newDepartment`
                 }
             ]).then(res => {
                 object.department = res.newDepartment;
