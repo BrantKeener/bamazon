@@ -74,6 +74,8 @@ const createDepartment = () => {
                     for(let i = 0; i < departmentArray.length; i++) {
                         if(departmentArray[i] === noSpaceA) {
                             return `That name, or something very similar is already in use. Please choose something more unique.`;
+                        } else if(noSpaceA.length === 0) {
+                            return `This cannot be blank.`;
                         }
                     };
                     return true;

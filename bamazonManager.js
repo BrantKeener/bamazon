@@ -215,7 +215,7 @@ const newProducts = (nameArray) => {
                 } else if(!fail1) {
                     return true;
                 }
-                return 'Please enter your numerical quantity in this format: xxxx (where the last 2 digits are the cents value.'
+                return 'Please enter your numerical quantity in this format: xxxx (where the last 2 digits are the cents value).'
             }
         },
         {
@@ -372,7 +372,10 @@ const correction = (object) => {
                     }
                 }
             ]).then(res => {
-                object.price = res.newPrice;
+                const priceBuildArray = res.newPrice.split('');
+                priceBuildArray.splice((priceBuildArray.length - 2), 0, '.');
+                const price = priceBuildArray.join('');
+                object.price = price;
                 newItemInputConfirm(object);
             });
             break;
@@ -407,8 +410,9 @@ const dbAdder = (object) => {
     let department = object.department;
     let price = Number(object.price);
     let quantity = Number(object.quantity);
-    sqlDBConnection.query(`INSERT INTO products (product_name, department_name, price, stock_quantity)
-    VALUES ('${name}', '${department}', ${price}, ${quantity})`, (err, res) => {
+    let initialProductSales = 0;
+    sqlDBConnection.query(`INSERT INTO products (product_name, department_name, price, stock_quantity, product_sales)
+    VALUES ('${name}', '${department}', ${price}, ${quantity}, ${initialProductSales})`, (err, res) => {
         if(err) throw err;
     });
     console.log(`\nYou have successfully added:\n\nProduct Name: ${name}\n\nto the avaiable products.\n`);
@@ -419,8 +423,8 @@ const dbAdder = (object) => {
 
 const managerListDisplay = (id, product, price, quantity) => {
     const space = ' ';
-    const defaultSpacesIDPrice = 20;
-    const defaultSpacesName = 40;
+    const defaultSpacesIDPrice = 15;
+    const defaultSpacesName = 30;
     let adjustIdSpace = space.repeat(defaultSpacesIDPrice - id.toString().length);
     let adjustProductSpace = space.repeat(defaultSpacesName - product.length);
     let adjustPriceSpace = space.repeat(defaultSpacesIDPrice - price.toString().length);
