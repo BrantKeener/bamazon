@@ -87,6 +87,10 @@ const viewProducts = (all, item) => {
     let idArray = [];
     let nameArray = [];
     sqlDBConnection.query(query, parameter, (err, res) => {
+        if(res.length === 0) {
+            console.log('\nAll items are above minimal limits. Returning to main menu.\n');
+            return openPrompt();
+        };
         if(err) throw err;
         for(let i = 0; i < Object.keys(res).length; i++){
             let id = res[i].id;

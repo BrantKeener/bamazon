@@ -1,4 +1,3 @@
-// TODO Seperate out SQL stuff into a module
 
 // .env to store passwords, sql for database, enquirer for CLI user interaction 
 const env = require('dotenv').config();
@@ -266,16 +265,17 @@ const finalCheckout = () => {
         return x.toFixed(2);
     };
     console.log(`\n${totalSpace}Order Total Price: $${orderTotal()}`);
-    inventoryAdjust(idArray, requesetdArray);
+    inventoryAdjust(idArray, requesetdArray, priceArray);
 };
 
-const inventoryAdjust = (id, req) => {
+const inventoryAdjust = (id, req, price) => {
     let idSearch = id.join(',');
-    sqlDBConnection.query(`SELECT stock_quantity FROM products WHERE id IN(${idSearch})`, (err, res) => {
+    sqlDBConnection.query(`SELECT stock_quantity, product_sales FROM products WHERE id IN(${idSearch})`, (err, res) => {
         if(err) throw err;
         for(let i = 0; i < res.length; i++) {
-            let tempArray = parseInt(res[i].stock_quantity) - parseInt(req[i], 10);
-            sqlDBConnection.query(`UPDATE products SET stock_quantity = ? WHERE id = ?`, [tempArray, id[i]], (err, res) => {
+            let tempStock = parseInt(res[i].stock_quantity, 10) - parseInt(req[i], 10);
+            let tempSales = parseInt(res[i].product_sales, 10) + (parseInt(req[i], 10) * parseFloat(price[i]));
+            sqlDBConnection.query(`UPDATE products SET stock_quantity = ?, product_sales = ? WHERE id = ?`, [tempStock, tempSales, id[i]], (err, res) => {
                 if(err) throw err;
             });
         };
